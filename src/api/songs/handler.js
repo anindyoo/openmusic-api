@@ -1,8 +1,5 @@
-/* eslint-disable import/no-extraneous-dependencies */
-
 const autoBind = require('auto-bind');
 
-/* eslint-disable no-underscore-dangle */
 class SongsHandler {
   constructor(service, validator) {
     this._service = service;
