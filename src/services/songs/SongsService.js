@@ -1,5 +1,3 @@
-/* eslint-disable no-underscore-dangle */
-
 const { nanoid } = require('nanoid');
 const { Pool } = require('pg');
 const InvariantError = require('../../exceptions/InvariantError');
@@ -99,6 +97,19 @@ class SongsService {
 
     if (!result.rowCount) {
       throw new NotFoundError('Song gagal dihapus. Id tidak ditemukan.');
+    }
+  }
+
+  async verifySongExistence(id) {
+    const query = {
+      text: 'SELECT * FROM songs WHERE id = $1',
+      values: [id],
+    };
+
+    const result = await this._pool.query(query);
+
+    if (!result.rowCount) {
+      throw new NotFoundError('Song tidak ditemukan.');
     }
   }
 }
