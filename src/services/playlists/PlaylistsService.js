@@ -1,13 +1,13 @@
 const { nanoid } = require('nanoid');
 const { Pool } = require('pg');
 const InvariantError = require('../../exceptions/InvariantError');
-const { mapPlaylistsDBToModel } = require('../../utils');
 const NotFoundError = require('../../exceptions/NotFoundError');
 const AuthorizationError = require('../../exceptions/AuthorizationError');
 
 class PlaylistsService {
-  constructor() {
+  constructor(collaborationsService) {
     this._pool = new Pool();
+    this._collaborationsService = collaborationsService;
   }
 
   async addPlaylist({ name, owner }) {
@@ -31,7 +31,10 @@ class PlaylistsService {
       text: `
         SELECT playlists.id, playlists.name, users.username
         FROM playlists
-        INNER JOIN users ON users.id = $1
+        LEFT JOIN collaborations 
+          ON collaborations.playlist_id = playlists.id
+        INNER JOIN users ON users.id = playlists.owner
+        WHERE playlists.owner = $1 OR collaborations.user_id = $1
       `,
       values: [owner],
     };
@@ -75,7 +78,8 @@ class PlaylistsService {
       text: `
         SELECT playlists.id, playlists.name, users.username
         FROM playlists
-        LEFT JOIN users ON users.id = playlists.owner
+        LEFT JOIN users 
+          ON users.id = playlists.owner
         WHERE playlists.id = $1
       `,
       values: [playlistId],
@@ -91,7 +95,8 @@ class PlaylistsService {
       text: `
         SELECT songs.id, songs.title, songs.performer 
         FROM songs
-        INNER JOIN playlist_songs ON playlist_songs.song_id = songs.id
+        INNER JOIN playlist_songs 
+          ON playlist_songs.song_id = songs.id
         WHERE playlist_songs.playlist_id = $1       
       `,
       values: [playlistId],
@@ -137,6 +142,21 @@ class PlaylistsService {
 
     if (playlist.owner !== owner) {
       throw new AuthorizationError('Anda tidak berhak mengakses Playlist ini.');
+    }
+  }
+
+  async verifyPlaylistAccess(playlistId, userId) {
+    try {
+      await this.verifyPlaylistOwner(playlistId, userId);
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        throw error;
+      }
+      try {
+        await this._collaborationsService.verifyCollaborator(playlistId, userId);
+      } catch (error) {
+        throw error;
+      }
     }
   }
 }
