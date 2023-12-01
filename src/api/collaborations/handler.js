@@ -2,24 +2,24 @@ const autoBind = require('auto-bind');
 
 class CollaborationsHandler {
   constructor(playlistsService, collaborationsService, usersService, validator) {
-    this._playlistsService = playlistsService;
-    this._collaborationsService = collaborationsService;
-    this._usersService = usersService;
-    this._validator = validator;
+    this.playlistsService = playlistsService;
+    this.collaborationsService = collaborationsService;
+    this.usersService = usersService;
+    this.validator = validator;
 
     autoBind(this);
   }
 
   async postCollaborationHandler(request, h) {
-    this._validator.validateCollaborationPayload(request.payload);
+    this.validator.validateCollaborationPayload(request.payload);
 
     const { playlistId, userId } = request.payload;
     const { id: credentialId } = request.auth.credentials;
 
-    await this._usersService.verifyUserById(userId);
-    await this._playlistsService.verifyPlaylistOwner(playlistId, credentialId);
+    await this.usersService.verifyUserById(userId);
+    await this.playlistsService.verifyPlaylistOwner(playlistId, credentialId);
 
-    const collaborationId = await this._collaborationsService.addCollaboration(playlistId, userId);
+    const collaborationId = await this.collaborationsService.addCollaboration(playlistId, userId);
 
     const response = h.response({
       status: 'success',
@@ -34,12 +34,12 @@ class CollaborationsHandler {
   }
 
   async deleteCollaborationHandler(request) {
-    this._validator.validateCollaborationPayload(request.payload);
+    this.validator.validateCollaborationPayload(request.payload);
     const { id: credentialId } = request.auth.credentials;
     const { playlistId, userId } = request.payload;
 
-    await this._playlistsService.verifyPlaylistOwner(playlistId, credentialId);
-    await this._collaborationsService.deleteCollaboration(playlistId, userId);
+    await this.playlistsService.verifyPlaylistOwner(playlistId, credentialId);
+    await this.collaborationsService.deleteCollaboration(playlistId, userId);
 
     return {
       status: 'success',
