@@ -7,9 +7,9 @@ module.exports = {
   register: async (server, {
     playlistsService, collaborationsService, usersService, validator,
   }) => {
-    const collaborationsHandler = new CollaborationsHandler(
-      playlistsService, collaborationsService, usersService, validator
-    );
+    const ps = playlistsService; const cs = collaborationsService; const
+      us = usersService;
+    const collaborationsHandler = new CollaborationsHandler(ps, cs, us, validator);
     server.route(routes(collaborationsHandler));
   },
 };
