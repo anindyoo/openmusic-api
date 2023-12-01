@@ -1,4 +1,3 @@
-/* eslint-disable no-underscore-dangle */
 const { nanoid } = require('nanoid');
 const { Pool } = require('pg');
 const InvariantError = require('../../exceptions/InvariantError');
@@ -6,7 +5,7 @@ const NotFoundError = require('../../exceptions/NotFoundError');
 
 class AlbumsService {
   constructor() {
-    this._pool = new Pool();
+    this.pool = new Pool();
   }
 
   async addAlbum({ name, year }) {
@@ -18,7 +17,7 @@ class AlbumsService {
       values: [id, name, year, createdAt, updatedAt],
     };
 
-    const result = await this._pool.query(query);
+    const result = await this.pool.query(query);
 
     if (!result.rows[0].id) {
       throw new InvariantError('Album gagal ditambahkan.');
@@ -33,7 +32,7 @@ class AlbumsService {
       values: [id],
     };
 
-    const result = await this._pool.query(query);
+    const result = await this.pool.query(query);
 
     if (!result.rowCount) {
       throw new NotFoundError('Album tidak ditemukan.');
@@ -44,7 +43,7 @@ class AlbumsService {
       values: [id],
     };
 
-    const songsResult = await this._pool.query(songQuery);
+    const songsResult = await this.pool.query(songQuery);
 
     result.rows[0].songs = songsResult.rows;
 
@@ -58,7 +57,7 @@ class AlbumsService {
       values: [name, year, updatedAt, id],
     };
 
-    const result = await this._pool.query(query);
+    const result = await this.pool.query(query);
 
     if (!result.rowCount) {
       throw new NotFoundError('Gagal memperbarui Album. Id tidak ditemukan.');
@@ -71,7 +70,7 @@ class AlbumsService {
       values: [id],
     };
 
-    const result = await this._pool.query(query);
+    const result = await this.pool.query(query);
 
     if (!result.rowCount) {
       throw new NotFoundError('Album gagal dihapus. Id tidak ditemukan.');
